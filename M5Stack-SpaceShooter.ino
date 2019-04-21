@@ -81,7 +81,32 @@ char shipImg[] = "ZZZZZZZWZZZZZZZ"
 //alien
 const int alienImgW = 15;
 const int alienImgH = 11;
-char alienImg[] = "ZZZZZZGZGZZZZZZ"
+
+char alienImg1[] = "ZBBZZZZYZZZZBBZ"
+				   "ZZZBZYRYRYZBZZZ"
+				   "ZZZZBRRYRRBZZZZ"
+				   "ZZZZZYYYYYZZZZZ"
+				   "ZZZZBBYYYBBZZZZ"
+				   "ZZZBBBRRRBBBZZZ"
+				   "ZZBBBZRRRZBBBZZ"
+				   "ZBBBBZYYYZBBBBZ"
+				   "ZBBBZZRRRZZBBBZ"
+				   "BBBBZZZRZZZBBBB"
+				   "BBBZZZZRZZZZBBB";
+
+char alienImg2[] = "ZZZRZZBZBZZRZZZ"
+				   "ZRRRZZBZBZZRRRZ"
+				   "ZRRRZWRWRWZRRRZ"
+				   "ZRRRZWWWWWZRRRZ"
+				   "ZZRRRRWWWRRRRZZ"
+				   "ZZZRRRBBBRRRZZZ"
+				   "ZZRRRRBBBRRRRZZ"
+				   "ZRRRRRWWWRRRRRZ"
+				   "ZZRRRZBBBZRRRZZ"
+				   "ZZZZRZBBBZRZZZZ"
+				   "ZZZZRZZZZZRZZZZ";
+
+char alienImg3[] = "ZZZZZZGZGZZZZZZ"
 				  "ZZZGGRRGRRGGZZZ"
 				  "ZZZZGRRGRRGZZZZ"
 				  "ZZZZZGGGGGZZZZZ"
@@ -114,7 +139,9 @@ char splodedImg[] = "ZZZZZZWWZZZZZZZZZZRYWWYRZZZY"
 TFT_eSprite myship = TFT_eSprite(&M5.Lcd);
 TFT_eSprite myshipe = TFT_eSprite(&M5.Lcd);
 TFT_eSprite myshipe2 = TFT_eSprite(&M5.Lcd);
-TFT_eSprite alien = TFT_eSprite(&M5.Lcd);
+TFT_eSprite alien1 = TFT_eSprite(&M5.Lcd);
+TFT_eSprite alien2 = TFT_eSprite(&M5.Lcd);
+TFT_eSprite alien3 = TFT_eSprite(&M5.Lcd);
 TFT_eSprite aliene = TFT_eSprite(&M5.Lcd);
 TFT_eSprite flames = TFT_eSprite(&M5.Lcd);
 TFT_eSprite sploded = TFT_eSprite(&M5.Lcd);
@@ -128,11 +155,26 @@ void makeSprite(TFT_eSprite* sprite, char img[], int imgW, int imgH) {
 	sprite->fillSprite(BLACK);
 	for (int i = 0; i < imgW * imgH; i++) {
 		if (img[i] != 'Z') {
-			if (img[i] == 'W') {      cellColor = WHITE; }
-			else if (img[i] == 'Y') { cellColor = YELLOW; }
-			else if (img[i] == 'B') { cellColor = BLUE; }
-			else if (img[i] == 'R') { cellColor = RED; }
-			else if (img[i] == 'G') { cellColor = 0x5E85; }
+			switch (img[i]) {
+				case 'W':
+					cellColor = WHITE;
+					break;
+				case 'Y':
+					cellColor = YELLOW;
+					break;
+				case 'B':
+					cellColor = BLUE;
+					break;
+				case 'R':
+					cellColor = RED;
+					break;
+				case 'G':
+					cellColor = GREEN;
+					break;
+				default:
+					cellColor = BLACK;
+					break;
+			}
 			sprite->fillRect(2 * (i % imgW), 2 * (i / imgW), 2, 2, cellColor);
 		}
 	}
@@ -158,7 +200,9 @@ void setup() {
 	pinMode(BUTTON_B_PIN, INPUT_PULLUP);
 	pinMode(BUTTON_C_PIN, INPUT_PULLUP);
 	makeSprite(&myship, shipImg, shipImgW, shipImgH);
-	makeSprite(&alien, alienImg, alienImgW, alienImgH);
+	makeSprite(&alien1, alienImg1, alienImgW, alienImgH);
+	makeSprite(&alien2, alienImg2, alienImgW, alienImgH);
+	makeSprite(&alien3, alienImg3, alienImgW, alienImgH);
 	makeSprite(&flames, flamesImg, flamesImgW, flamesImgH);
 	makeSprite(&sploded, splodedImg, splodedImgW, splodedImgH);
 	eraseSprite(&myshipe, 30, 44);
@@ -378,7 +422,13 @@ void moveAliens() {
 	for (int i = 0; i < 18; i++) {
 		if (alienLive[i]) {
 			aliene.pushSprite(findOldAlienX(i), findOldAlienY(i));
-			alien.pushSprite(findAlienX(i), findAlienY(i));
+			if ( i < 6 ) {
+				alien3.pushSprite(findAlienX(i), findAlienY(i));
+			} else if ( i < 12 ) {
+				alien2.pushSprite(findAlienX(i), findAlienY(i));
+			} else {
+				alien1.pushSprite(findAlienX(i), findAlienY(i));
+			}
 		}
 	}
 	oldAlienX = alienX; oldAlienY = alienY;
