@@ -46,7 +46,7 @@ int fFireX[5] = {0, 0, 0, 0, 0};
 int fFireY[5] = {0, 0, 0, 0, 0};
 int fFireAge[5] = {0, 0, 0, 0, 0};
 //--------------------------Aliens----------------------------------
-boolean alienLive[18];
+int alienLive[18];
 int alienLiveCount = 18;
 int alienX = 7;
 int alienY = 25;
@@ -109,16 +109,28 @@ char alienImg2[] = "ZZZRZZBZBZZRZZZ"
 				   "ZZZZRZZZZZRZZZZ";
 
 char alienImg3[] = "ZZZZZZGZGZZZZZZ"
-				  "ZZZGGRRGRRGGZZZ"
-				  "ZZZZGRRGRRGZZZZ"
-				  "ZZZZZGGGGGZZZZZ"
-				  "ZZZGGYYGYYGGZZZ"
-				  "GGGGGYYYYYGGGGG"
-				  "ZGGGGYYYYYGGGGZ"
-				  "ZGRGGZRZRZGGRGZ"
-				  "GRRGZZZZZZZGRRG"
-				  "GGGGZZZZZZZGGGG"
-				  "ZGGZZZZZZZZZGGZ";
+				   "ZZZGGRRGRRGGZZZ"
+				   "ZZZZGRRGRRGZZZZ"
+				   "ZZZZZGGGGGZZZZZ"
+				   "ZZZGGYYGYYGGZZZ"
+				   "GGGGGYYYYYGGGGG"
+				   "ZGGGGYYYYYGGGGZ"
+				   "ZGRGGZRZRZGGRGZ"
+				   "GRRGZZZZZZZGRRG"
+				   "GGGGZZZZZZZGGGG"
+				   "ZGGZZZZZZZZZGGZ";
+
+char alienImg4[] = "ZZZZZZBZBZZZZZZ"
+				   "ZZZBBRRBRRBBZZZ"
+				   "ZZZZBRRBRRBZZZZ"
+				   "ZZZZZBBBBBZZZZZ"
+				   "ZZZBBYYBYYBBZZZ"
+				   "BBBBBYYYYYBBBBB"
+				   "ZBBBBYYYYYBBBBZ"
+				   "ZBRBBZRZRZBBRBZ"
+				   "BRRBZZZZZZZBRRB"
+				   "BBBBZZZZZZZBBBB"
+				   "ZBBZZZZZZZZZBBZ";
 
 //flames
 const int flamesImgW = 12;
@@ -144,6 +156,7 @@ TFT_eSprite myshipe2 = TFT_eSprite(&M5.Lcd);
 TFT_eSprite alien1 = TFT_eSprite(&M5.Lcd);
 TFT_eSprite alien2 = TFT_eSprite(&M5.Lcd);
 TFT_eSprite alien3 = TFT_eSprite(&M5.Lcd);
+TFT_eSprite alien4 = TFT_eSprite(&M5.Lcd);
 TFT_eSprite aliene = TFT_eSprite(&M5.Lcd);
 TFT_eSprite flames = TFT_eSprite(&M5.Lcd);
 TFT_eSprite sploded = TFT_eSprite(&M5.Lcd);
@@ -187,9 +200,18 @@ void eraseSprite(TFT_eSprite* sprite, int imgW, int imgH) {
 	sprite->fillSprite(BLACK);
 }
 
+void initAlienLive() {
+	for (int i = 0; i < 18; i++) {
+		if ( i < 6 ) {
+			alienLive[i] = 2;
+		} else {
+			alienLive[i] = 1;
+		}
+	}
+}
 //=============================== setup and loop ==================
 void setup() {
-	memset(alienLive, true, 18);
+	initAlienLive();
 	memset(aFireX, 0, 5);
 	memset(aFireY, 0, 5);
 	memset(aFireAge, 0, 5);
@@ -211,6 +233,7 @@ void setup() {
 	makeSprite(&alien1, alienImg1, alienImgW, alienImgH);
 	makeSprite(&alien2, alienImg2, alienImgW, alienImgH);
 	makeSprite(&alien3, alienImg3, alienImgW, alienImgH);
+	makeSprite(&alien4, alienImg4, alienImgW, alienImgH);
 	makeSprite(&flames, flamesImg, flamesImgW, flamesImgH);
 	makeSprite(&sploded, splodedImg, splodedImgW, splodedImgH);
 	eraseSprite(&myshipe, 30, 44);
@@ -295,13 +318,17 @@ void loop() {
 	}
 	alienLiveCount = 0;
 	for (int i = 0; i < 18; i++) {
-		if (alienLive[i]) {
+		if (alienLive[i] > 0) {
 			alienLiveCount += 1;
 			if (alienShot(i)) {
-				aliene.pushSprite(findOldAlienX(i), findOldAlienY(i));
-				alienLiveCount -= 1;
-				alienLive[i] = false;
-				score += scoreInc;
+				alienLive[i] -= 1;
+				if ( i < 6 && alienLive[i] == 1 ) {
+					alien4.pushSprite(findOldAlienX(i), findOldAlienY(i));
+				} else {
+					aliene.pushSprite(findOldAlienX(i), findOldAlienY(i));
+					alienLiveCount -= 1;
+					score += scoreInc;
+				}
 			}
 			if (onPlayer(i) or exceedBoundary(i)) {
 				gameOver();
@@ -357,7 +384,7 @@ void drawScore(boolean win) {
 //==================================================================
 void levelUp() {
 	play = false;
-	memset(alienLive, true, 18);
+	initAlienLive();
 	memset(aFireX, 0, 5);
 	memset(aFireY, 0, 5);
 	memset(aFireAge, 0, 5);
@@ -428,10 +455,14 @@ boolean exceedBoundary(int num) {
 //==================================================================
 void moveAliens() {
 	for (int i = 0; i < 18; i++) {
-		if (alienLive[i]) {
+		if (alienLive[i] > 0) {
 			aliene.pushSprite(findOldAlienX(i), findOldAlienY(i));
 			if ( i < 6 ) {
-				alien3.pushSprite(findAlienX(i), findAlienY(i));
+				if (alienLive[i] == 1) {
+					alien4.pushSprite(findAlienX(i), findAlienY(i));
+				} else {
+					alien3.pushSprite(findAlienX(i), findAlienY(i));
+				}
 			} else if ( i < 12 ) {
 				alien2.pushSprite(findAlienX(i), findAlienY(i));
 			} else {
